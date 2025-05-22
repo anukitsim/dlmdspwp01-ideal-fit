@@ -4,10 +4,10 @@ src/loader.py
 
 Reusable CSV loaders for the Ideal-Fit project.
 
-CsvLoader ........ base class (handles file path, DataFrame caching, DB insert)
-TrainingLoader ... loads training_data.csv  ->  table 'training'
-IdealLoader ...... loads ideal_functions.csv ->  table 'ideal'
-TestLoader ....... loads test_data.csv      ->  **not** written to DB (only kept in RAM)
+CsvLoader - base class (handles file path, DataFrame caching, DB insert)
+TrainingLoader - loads training_data.csv  ->  table 'training'
+IdealLoader - loads ideal_functions.csv ->  table 'ideal'
+TestLoader - loads test_data.csv      ->  not written to DB (is only kept in RAM)
 
 """
 
@@ -23,7 +23,7 @@ from .exceptions import DataValidationError
 
 
 class CsvLoader:
-    """Parent class that *any* concrete loader can inherit from."""
+    """Parent class that any  loader can inherit from."""
 
     # subclasses must override this
     TABLE_NAME: Final[str | None] = None
@@ -42,6 +42,13 @@ class CsvLoader:
         """Load the CSV once and cache the DataFrame."""
         if self._df is None:
             self._df = pd.read_csv(self.csv_path)
+            
+            # ===== safety-net ======================================
+        if self._df.empty:
+            from .exceptions import DataValidationError
+            raise DataValidationError(f"CSV file is empty: {self.csv_path}")
+        # =============================================================
+        
         return self._df
 
     def to_db(self, db: DatabaseManager) -> None:

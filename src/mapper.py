@@ -93,4 +93,16 @@ def map_test_points(db: DatabaseManager) -> int:
             "mapping", db.engine, if_exists="append", index=False
         )
 
+        # Create DataFrame → append to mapping table
+    if accepted_rows:
+        pd.DataFrame(accepted_rows).to_sql(
+            "mapping", db.engine, if_exists="append", index=False
+        )
+    else:  # <── nothing matched
+        from .exceptions import NoIdealMatchError
+
+        raise NoIdealMatchError(
+            "No test point matched any ideal curve (tolerance √2 × max_dev)."
+        )
+
     return len(accepted_rows)

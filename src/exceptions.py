@@ -1,11 +1,19 @@
 """
-src/exceptions.py
------------------
+exceptions.py - error types
+------------------------------------
 
-Temporary stub so other modules can import `DataValidationError`.
+ • DataValidationError
+      If a CSV file is missing or totally empty.
 
-You’ll expand this file in **Step 17** with more custom exceptions.
+ • NoIdealMatchError
+      When a point in the test set can not be matched to
+     any of the four selected ideal curves.
 """
 
+
 class DataValidationError(Exception):
-    """Raised when a CSV file is missing or corrupt."""
+    """CSV is missing or has zero rows."""
+
+
+class NoIdealMatchError(Exception):
+    """Nothing in test_data.csv satisfied the √2 tolerance."""
