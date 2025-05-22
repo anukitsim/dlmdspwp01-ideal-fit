@@ -23,7 +23,7 @@ def test_mapper_inserts_rows(db):
 
 
 def test_mapper_raises_custom_if_nothing(tmp_path, db):
-    """Feed an empty CSV – expect NoIdealMatchError."""
+    """Feed an empty CSV - expect NoIdealMatchError."""
     empty_csv = tmp_path / "empty.csv"
     empty_csv.write_text("x,y\n")  # header only
 

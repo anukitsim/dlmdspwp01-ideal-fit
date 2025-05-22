@@ -1,5 +1,5 @@
 """
-visualise.py 
+visualise.py
 --------------
 
 - draws the four noisy training curves

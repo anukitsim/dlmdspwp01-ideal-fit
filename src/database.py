@@ -1,55 +1,99 @@
-# Build SQLite Database
+"""
+src/database.py
+================
 
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, Float, String
+SQLite helper for the *Ideal-Fit* assignment.
+
+It does **one** job: create (or open) ``db/idealfit.db`` and make sure the
+three required tables exist:
+
+1. training -  x + y1‥y4        (raw noisy curves)
+2. ideal   - x + y1‥y50       (perfect reference curves)
+3. mapping - id + x, y, ideal_id, deviation (test-point assignments)
+
+
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from sqlalchemy import Column, Float, Integer, MetaData, String, Table, create_engine
+from sqlalchemy.engine import Engine
+
 
 class DatabaseManager:
-    def __init__(self, db_path="idealfit.db"):
-        self.db_path = db_path
-        # Placeholder for our database connection object
-        self.engine = None
-        # Container for table definitions
-        self.metadata = MetaData()
-        
-    def create_engine(self):
-        """
-        This function creates the connection engine to the SQLite file
-        """
-        self.engine = create_engine(f"sqlite:///{self.db_path}")
-        return self.engine
+    """
+    small wrapper around SQLAlchemy so the rest of the codebase never has to
+    think about SQL—or paths on disk.
 
-    def create_tables(self):
+    Parameters
+    ----------
+    db_path : str, optional
+        Relative (or absolute) location of the SQLite file.
+        Defaults to ``"db/idealfit.db"``
+
+    """
+
+    def __init__(self, db_path: str = "db/idealfit.db") -> None:
+        self.db_path: str = db_path
+        self._engine: Engine | None = None
+        self._meta: MetaData = MetaData()
+
+        # Make sure the folder exists (useful in fresh clones)
+        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
+
+    # ------------------------------------------------------------------ #
+    # Public helpers
+    # ------------------------------------------------------------------ #
+    def create_engine(self) -> Engine:
+        """Create (or reuse) the SQLAlchemy engine that talks to SQLite."""
+        if self._engine is None:
+            self._engine = create_engine(f"sqlite:///{self.db_path}")
+        return self._engine
+
+    def create_tables(self) -> None:
         """
-        Defines each table (training, ideal, mapping) and creates them in the actual database file
+        Define all three tables only once and issue ``CREATE TABLE IF NOT EXISTS``
+        so running the script twice does not brak anything.
         """
-        # If no engine exists
-        if self.engine is None:
+        if self._engine is None:
             self.create_engine()
-        
-        # 1) 'training' table: x plus y1–y4
+
+        # --- 1) training -------------------------------------------------
         Table(
-            "training", self.metadata,
+            "training",
+            self._meta,
             Column("x", Float, primary_key=True),
-            Column("y1", Float),
-            Column("y2", Float),
-            Column("y3", Float),
-            Column("y4", Float),
+            *[Column(f"y{i}", Float) for i in range(1, 5)],
         )
 
-        # 2) 'ideal' table: x plus y1–y50
-        cols = [Column("x", Float, primary_key=True)]
-        for i in range(1, 51):
-            cols.append(Column(f"y{i}", Float))
-        Table("ideal", self.metadata, *cols)
-    
-        # 3) 'mapping' table: id, x, y, ideal_id, deviation
+        # --- 2) ideal (50 y-columns) ------------------------------------
         Table(
-            "mapping", self.metadata,
+            "ideal",
+            self._meta,
+            Column("x", Float, primary_key=True),
+            *[Column(f"y{i}", Float) for i in range(1, 51)],
+        )
+
+        # --- 3) mapping --------------------------------------------------
+        Table(
+            "mapping",
+            self._meta,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("x", Float),
             Column("y", Float),
-            Column("ideal_id", String),
-            Column("deviation", Float),
+            Column("ideal_id", String),  # e.g. "y17"
+            Column("deviation", Float),  # |y_test – y_ideal|
         )
-    
-        # Create all tables in SQLite file
-        self.metadata.create_all(self.engine)
+
+        # Actually create them in SQLite
+        self._meta.create_all(self._engine)
+
+    # ------------------------------------------------------------------ #
+    # Convenience property
+    # ------------------------------------------------------------------ #
+    @property
+    def engine(self) -> Engine:
+        """Expose the underlying engine (read-only)."""
+        return self.create_engine()

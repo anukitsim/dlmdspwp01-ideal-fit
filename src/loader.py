@@ -19,7 +19,7 @@ from typing import Final
 import pandas as pd
 
 from .database import DatabaseManager
-from .exceptions import DataValidationError  
+from .exceptions import DataValidationError
 
 
 class CsvLoader:
@@ -42,13 +42,14 @@ class CsvLoader:
         """Load the CSV once and cache the DataFrame."""
         if self._df is None:
             self._df = pd.read_csv(self.csv_path)
-            
+
             # ===== safety-net ======================================
         if self._df.empty:
             from .exceptions import DataValidationError
+
             raise DataValidationError(f"CSV file is empty: {self.csv_path}")
         # =============================================================
-        
+
         return self._df
 
     def to_db(self, db: DatabaseManager) -> None:

@@ -11,7 +11,7 @@ Picks the ideal column with the smallest error for each training column
 Also records the maximum absolute deviation for that winning pair
 Writes the 4 results into a new SQLite table named chosen_ideals
   (training_col | ideal_col | max_deviation)
-  
+
 Returns a Python dict →  {'y1':'y17', 'y2':'y03', ...}
 
 
@@ -58,7 +58,7 @@ def select_best_ideals(db: DatabaseManager) -> Dict[str, str]:
     training_cols: List[str] = [c for c in training_df.columns if c != "x"]
     ideal_cols: List[str] = [c for c in ideal_df.columns if c != "x"]
 
-    results = []          # list of dicts → will become DataFrame
+    results = []  # list of dicts → will become DataFrame
     mapping: Dict[str, str] = {}
 
     for tcol in training_cols:
@@ -74,9 +74,7 @@ def select_best_ideals(db: DatabaseManager) -> Dict[str, str]:
         max_dev = (training_df[tcol] - ideal_df[best_icol]).abs().max()
 
         results.append(
-            {"training_col": tcol,
-             "ideal_col": best_icol,
-             "max_deviation": max_dev}
+            {"training_col": tcol, "ideal_col": best_icol, "max_deviation": max_dev}
         )
         mapping[tcol] = best_icol
 

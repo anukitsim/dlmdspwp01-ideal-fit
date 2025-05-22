@@ -1,6 +1,7 @@
 """
 Unit test for the least-squares selector.
 """
+
 from sqlalchemy import text
 from src.selector import select_best_ideals
 
