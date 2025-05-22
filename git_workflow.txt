@@ -1,0 +1,10 @@
+git clone -b develop https://github.com/anukitsim/dlmdspwp01-ideal-fit.git
+git checkout -b feature/<short-desc>
+git add <files>
+git commit -m "Feature: short, imperative title"
+git push -u origin feature/<short-desc>  
+git checkout develop
+git pull --ff-only
+git merge --no-ff feature/<short-desc>
+git push origin develop
+git branch -d feature/<short-desc>
