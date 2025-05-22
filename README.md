@@ -1,6 +1,6 @@
 # Ideal-Fit — DLMDSPWP01 *Programming with Python*
 
-> **Goal** Match four noisy training functions to 50 ideal functions via least-squares;  
+> **Goal**: Match four noisy training functions to 50 ideal functions via least-squares;  
 > classify new test points if │y_test − y_ideal│ ≤ √2·(max deviation).
 
 * Python 3.10 • Pandas • NumPy • SQLAlchemy • Bokeh  
