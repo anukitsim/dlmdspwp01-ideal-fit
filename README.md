@@ -9,13 +9,9 @@
 
 ## How to run
 
-```bash
-# 1) build DB & choose ideal curves
-python src/main.py
-
-# 2) render interactive plot → outputs/fit.html
-python -m src.visualise
-
-# 3) run all automated tests (expect “5 passed”)
-pytest -q
-
+1. **Load** the CSVs into the database  
+   ```bash
+   python src/main.py load \
+     --db db/idealfit.db \
+     --train data/train.csv \
+     --ideal data/ideal.csv
