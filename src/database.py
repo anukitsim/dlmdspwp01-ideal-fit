@@ -8,10 +8,8 @@ It does **one** job: create (or open) ``db/idealfit.db`` and make sure the
 three required tables exist:
 
 1. training -  x + y1‥y4        (raw noisy curves)
-2. ideal   - x + y1‥y50       (perfect reference curves)
-3. mapping - id + x, y, ideal_id, deviation (test-point assignments)
-
-
+2. ideal    -  x + y1‥y50       (perfect reference curves)
+3. mapping  -  id + x, y, ideal_id, deviation (test-point assignments)
 """
 
 from __future__ import annotations
@@ -24,18 +22,20 @@ from sqlalchemy.engine import Engine
 
 class DatabaseManager:
     """
-    small wrapper around SQLAlchemy so the rest of the codebase never has to
-    think about SQL—or paths on disk.
+    Small wrapper around SQLAlchemy to handle database setup and access.
 
     Parameters
     ----------
     db_path : str, optional
-        Relative (or absolute) location of the SQLite file.
-        Defaults to ``"db/idealfit.db"``
-
+        Path to the SQLite file. Defaults to "db/idealfit.db".
     """
 
     def __init__(self, db_path: str = "db/idealfit.db") -> None:
+        """
+        Initialize DatabaseManager and ensure the database directory exists.
+
+        Creates the parent folder for the database file if it is missing.
+        """
         self.db_path: str = db_path
         self._engine: Engine | None = None
         self._meta: MetaData = MetaData()
@@ -46,16 +46,28 @@ class DatabaseManager:
     # ------------------------------------------------------------------ #
     # Public helpers
     # ------------------------------------------------------------------ #
+
     def create_engine(self) -> Engine:
-        """Create (or reuse) the SQLAlchemy engine that talks to SQLite."""
+        """
+        Create or reuse a SQLAlchemy Engine connected to the SQLite database.
+
+        Returns
+        -------
+        Engine
+            The SQLAlchemy Engine for database operations.
+        """
         if self._engine is None:
             self._engine = create_engine(f"sqlite:///{self.db_path}")
         return self._engine
 
     def create_tables(self) -> None:
         """
-        Define all three tables only once and issue ``CREATE TABLE IF NOT EXISTS``
-        so running the script twice does not brak anything.
+        Define and create the required tables if they do not already exist.
+
+        Tables created:
+        - training: x (primary key), y1–y4
+        - ideal: x (primary key), y1–y50
+        - mapping: id (primary key), x, y, ideal_id, deviation
         """
         if self._engine is None:
             self.create_engine()
@@ -87,13 +99,21 @@ class DatabaseManager:
             Column("deviation", Float),  # |y_test – y_ideal|
         )
 
-        # Actually create them in SQLite
+        # Actually create the tables in SQLite
         self._meta.create_all(self._engine)
 
     # ------------------------------------------------------------------ #
     # Convenience property
     # ------------------------------------------------------------------ #
+
     @property
     def engine(self) -> Engine:
-        """Expose the underlying engine (read-only)."""
+        """
+        Provide the SQLAlchemy Engine for database access.
+
+        Returns
+        -------
+        Engine
+            The active SQLAlchemy Engine instance.
+        """
         return self.create_engine()
