@@ -11,7 +11,8 @@
 
 1. **Load** the CSVs into the database  
    ```bash
-   python src/main.py load \
-     --db db/idealfit.db \
-     --train data/train.csv \
-     --ideal data/ideal.csv
+    python -m src.main load \
+      --db db/idealfit.db \
+      --train data/train.csv \
+      --ideal data/ideal.csv
+   
